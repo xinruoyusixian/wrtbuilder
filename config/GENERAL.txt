@@ -4,7 +4,7 @@ CONFIG_PACKAGE_luci-app-pbr=y #策略分流
 CONFIG_PACKAGE_luci-app-smartdns=y #此处似乎被报错
 CONFIG_PACKAGE_luci-app-ddnsto=y
 CONFIG_PACKAGE_luci-app-filemanager=y
-CONFIG_PACKAGE_micropython-lib=y #报错
+#CONFIG_PACKAGE_micropython-lib=y #报错
 CONFIG_PACKAGE_luci-app-diskman=y
 CONFIG_PACKAGE_luci-app-wolplus=y
 CONFIG_PACKAGE_luci-app-bandix=y
@@ -103,4 +103,5 @@ CONFIG_PACKAGE_luci-lib-ipkg=y
 CONFIG_PACKAGE_luci-lua-runtime=y
 CONFIG_PACKAGE_luci-proto-bonding=y
 CONFIG_PACKAGE_luci-proto-relay=y
+
 
