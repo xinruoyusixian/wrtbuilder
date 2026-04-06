@@ -1,7 +1,74 @@
 #!/bin/bash
 
-# Handle file conflicts for luci-app-tailscale
-# Fixing issues where it tries to overwrite files owned by tailscale package
+PKG_PATH="$GITHUB_WORKSPACE/wrt/package/"
 
-# Your existing script content
+#修改argon主题字体和颜色
+if [ -d *"luci-theme-argon"* ]; then
+	echo " "
 
+	cd ./luci-theme-argon/
+
+	sed -i "/font-weight:/ { /important/! { /\/\*/! s/:.*/: var(--font-weight);/ } }" $(find ./luci-theme-argon -type f -iname "*.css")
+sed -i "s/primary '.*'/primary '#2babfc'/; s/dark_primary '.*'/dark_primary '#2babfc'/; s/'0.2'/'0.3'/; s/'600'/'normal'/" ./luci-app-argon-config/root/etc/config/argon
+
+	cd $PKG_PATH && echo "luci-theme-argon patched!"
+fi
+
+#修改qca-nss-drv启动顺序
+NSS_DRV="../feeds/nss_packages/qca-nss-drv/files/qca-nss-drv.init"
+if [ -f "$NSS_DRV" ]; then
+	echo " "
+
+	sed -i 's/START=.*/START=85/g' $NSS_DRV
+
+	cd $PKG_PATH && echo "qca-nss-drv patched!"
+fi
+
+#修改qca-nss-pbuf启动顺序
+NSS_PBUF="./kernel/mac80211/files/qca-nss-pbuf.init"
+if [ -f "$NSS_PBUF" ]; then
+	echo " "
+
+	sed -i 's/START=.*/START=86/g' $NSS_PBUF
+
+	cd $PKG_PATH && echo "qca-nss-pbuf patched!"
+fi
+
+#修复Rust编译失败
+RUST_FILE=$(find ../feeds/packages/ -maxdepth 3 -type f -wholename "*/rust/Makefile")
+if [ -f "$RUST_FILE" ]; then
+	echo " "
+
+	sed -i 's/ci-llvm=true/ci-llvm=false/g' $RUST_FILE
+
+	cd $PKG_PATH && echo "rust has been fixed!"
+fi
+
+#修复DiskMan编译失败
+DM_FILE="./luci-app-diskman/applications/luci-app-diskman/Makefile"
+if [ -f "$DM_FILE" ]; then
+	echo " "
+
+	sed -i 's/fs-ntfs/fs-ntfs3/g' $DM_FILE
+sed -i '/ntfs-3g-utils /d' $DM_FILE
+
+	cd $PKG_PATH && echo "diskman has been fixed!"
+fi
+
+#修复luci-app-tailscale文件冲突
+TAILSCALE_FILE=$(find . -maxdepth 2 -type f -name "Makefile" | xargs grep -l "luci-app-tailscale" 2>/dev/null | head -1)
+if [ -z "$TAILSCALE_FILE" ]; then
+	TAILSCALE_FILE="./luci-app-tailscale/Makefile"
+fi
+
+if [ -f "$TAILSCALE_FILE" ]; then
+	echo " "
+
+	# Remove conflicting file installations from luci-app-tailscale
+	sed -i '/INSTALL_CONF.*etc\/config\/tailscale/d' $TAILSCALE_FILE
+	sed -i '/INSTALL_BIN.*etc\/init.d\/tailscale/d' $TAILSCALE_FILE
+	sed -i '/etc\/config\/tailscale/d' $TAILSCALE_FILE
+	sed -i '/etc\/init.d\/tailscale/d' $TAILSCALE_FILE
+
+	cd $PKG_PATH && echo "luci-app-tailscale patched!"
+fi
